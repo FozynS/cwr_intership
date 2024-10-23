@@ -5,6 +5,7 @@ use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Patient\PatientTag;
+use App\Http\Controllers\SmsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -342,6 +343,14 @@ Route::namespace('Api')->group(function () {
     });
 
     Route::post('/webhook/twilio/sms', 'Webhook\Twilio\SmsController@sms');
+
+    Route::post('/sms/incoming', 'SmsController@processSms');
+    Route::get('/patients/{patient}/sms/count', 'SmsController@getSmsCount');
+    Route::get('/patients/{patient}/sms', 'SmsController@index');
+    Route::post('/patients/{patient}/sms', 'SmsController@store');
+    Route::post('/patients/{patient}/sms/send', 'SmsController@sendMessage');
+    Route::get('/patients/{patient}/phone-numbers', 'SmsController@getPhoneNumbers');
+    Route::get('/patients/{patient}/sms/page/{page}', 'SmsController@loadMoreMessages');
 
     Route::prefix('secretaries-dashboard')->middleware(['admin-secretary'])->group(function () {
         Route::get('important-for-today', 'SecretariesDashboardController@getImportantForToday');

@@ -903,19 +903,19 @@
             @click="changeTab('transactions')"
           >
             <div class="chart-tab-title">
-              Payments!!! ({{ tabs.patient_card_transactions.count }})
+              Payments ({{ tabs.patient_card_transactions.count }})
             </div>
           </div>
-          <!-- <div
+          <div
             class="chart-tab"
-            :class="{ active: tabs.transactions.active }"
             v-show="
               !is_audit_mode && (isUserAdmin || isCollectPaymentAvailable)
             "
-            @click="changeTab('transactions')"
+            :class="{ active: tabs.sms.active }"
+            @click="changeTab('sms')"
           >
-            <div class="chart-tab-title">SMS</div>
-          </div> -->
+            <div class="chart-tab-title">SMS ({{ tabs.sms.count }})</div>
+          </div>
           <div
             class="chart-tab"
             :class="{ active: tabs.notifications.active }"
@@ -979,6 +979,11 @@
       />
       <patient-transactions
         v-if="tabs.transactions.active && !loading_transactions_tab"
+      />
+      <sms-chat
+        v-if="tabs.sms.active && !statuses.sms_loading"
+        :patientId="patientId"
+        :patient="patient"
       />
 
       <div
@@ -2145,6 +2150,7 @@ import CancellationFeeRestrictions from "./appointments/CancellationFeeRestricti
 import DownloadDocs from "./dashboard/components/DownloadDocs";
 import PatientTags from "./PatientTags.vue";
 import VisitFrequencyChangesTooltip from "./VisitFrequencyChangesTooltip.vue";
+import SmsChat from "./SmsChat.vue";
 import { Notification } from "element-ui";
 
 export default {
@@ -2160,10 +2166,12 @@ export default {
     DownloadDocs,
     KaiserReferrals,
     VisitFrequencyChangesTooltip,
+    SmsChat,
   },
 
   data() {
     return {
+      patientId: this.getPatientId(),
       emailFormData: {
         patient_email: "",
         patient_secondary_email: "",
@@ -2211,6 +2219,7 @@ export default {
         patient_forms_loading: false,
         starting_video_session: false,
         detaching_provider: false,
+        sms_loading: false,
       },
       other_type_id: null,
       document_type_id: null,
@@ -2244,6 +2253,10 @@ export default {
           count: 0,
         },
         notifications: {
+          active: false,
+          count: 0,
+        },
+        sms: {
           active: false,
           count: 0,
         },
@@ -2821,6 +2834,13 @@ export default {
     },
   },
   methods: {
+    getPatientId() {
+      console.log( this.patient);
+      return Number(this.$route.params.id);
+    },
+    // handleEvent(payload) {
+    //   console.log('Event received with payload:', payload);
+    // },
     openEmailUnsubscribedDialog(email) {
       this.restoreEmail = email;
       this.showEmailUnsubscribedDialog = true;
@@ -2991,7 +3011,9 @@ export default {
           this.openUploadForm();
           window.setTimeout(() => {}, 1000);
         }
-
+        // if (tabName === "sms") {
+        //   console.log(this.$route.params.id);
+        // }
         this.loadTabData(tabName);
 
         if (tabName === "timeline") {
@@ -3587,6 +3609,15 @@ export default {
               }
             }, 500);
           }
+        });
+
+      this.$store
+        .dispatch("getSmsCount", { patientId: this.$route.params.id })
+        .then((response) => {
+          this.tabs.sms.count = response.data.count;
+        })
+        .catch((error) => {
+          console.error('Error:', error);
         });
 
       function getCookie(name) {
@@ -4600,7 +4631,6 @@ export default {
 
       if (tabs.includes("visits")) {
         this.statuses.visits_loading = true;
-
         this.$store
           .dispatch("getPatientVisitCreatedAppointments", this.patient.id)
           .then(() => {

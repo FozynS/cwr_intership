@@ -196,6 +196,11 @@ class Patient extends Model implements LoggableModelInterface
     {
         return implode(' ', [$this->first_name, $this->last_name]);
     }
+    
+    public function sms()
+    {
+        return $this->hasMany(PatientSms::class);
+    }
 
     public function canChargeLateCancellationFee()
     {

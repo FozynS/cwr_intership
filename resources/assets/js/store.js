@@ -165,9 +165,14 @@ export default new Vuex.Store({
         availabilitySubtypes: [],
         treatmentModalities: [],
         transactionPurposes: [],
+        smsCount: null,
     },
 
     mutations: {
+        SET_SMS_COUNT(state, response) {
+          state.smsCount = response;
+        },
+
         setTimelineFilters(state, payload) {
             state.timelineFilters = payload;
         },
@@ -520,7 +525,23 @@ export default new Vuex.Store({
         },
     },
 
+    
     actions: {
+      getSmsCount({ commit }, { patientId }) {
+          return axios({
+              method: "get",
+              url: `/api/patients/${patientId}/sms/count`,
+            })
+            .then((response) => {
+              const data = response.data;
+              commit('SET_SMS_COUNT', data.count);
+              return response;
+            })
+            .catch(() => {
+              throw new Error(`Failed to fetch SMS count: ${response.status}`)
+            })
+      },
+
         getProvidersDatasetForTribute({ commit }) {
             return axios({
                 method: "get",
