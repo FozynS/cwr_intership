@@ -6,15 +6,15 @@
         v-for="message in messageGroup.messages"
         :key="message.id"
         class="message"
-        :class="{ 
+        :class="{
           'message-sent': message.direction === 'outbound',
           'message-received': message.direction === 'inbound',
         }"
       >
         <div class="message-author">{{ getAuthor(message) }}</div>
         <div class="message-text-container">
-          <div class="message-text">{{ message.message }}</div>
-          <div class="message-time">{{ formatTime(message.time) }}</div>
+          <div class="message-text">{{ message.message_body }}</div>
+          <div class="message-time">{{ formatTime(message.created_at) }}</div>
         </div>
       </div>
     </div>
@@ -24,15 +24,22 @@
     <div class="send-message-container">
       <div class="select-container">
         <select v-model="selectedPhone" class="phone-select">
-          <option :value="patient.cell_phone">{{ formatPhone(patient.cell_phone) }}</option>
-          <option :value="patient.home_phone">{{ formatPhone(patient.home_phone) }}</option>
-          <option :value="patient.work_phone">{{ formatPhone(patient.work_phone) }}</option>
+          <option :value="patient.cell_phone">
+            {{ formatPhone(patient.cell_phone) }}
+          </option>
+          <option :value="patient.home_phone">
+            {{ formatPhone(patient.home_phone) }}
+          </option>
+          <option :value="patient.work_phone">
+            {{ formatPhone(patient.work_phone) }}
+          </option>
         </select>
       </div>
 
       <textarea
         v-model="newMessage"
         placeholder="Enter your message"
+        @keydown.enter="sendMessage"
         class="message-input-section"
       ></textarea>
       <button @click="sendMessage">Submit</button>
@@ -78,7 +85,9 @@ export default {
       axios
         .get(`/api/patients/${this.patientId}/sms`)
         .then((response) => {
-          this.messages = response.data.data;
+          this.messages = response.data.data.data.sort(
+            (a, b) => new Date(a.created_at) - new Date(b.created_at)
+          );
           this.totalPages = response.data.pagination.last_page;
           this.currentPage = response.data.pagination.current_page;
         })
@@ -90,20 +99,29 @@ export default {
     groupMessagesByDate(messages) {
       const grouped = {};
       messages.forEach((message) => {
-        const date = message.date;
+        const date = message.created_at.split(" ")[0];
         if (!grouped[date]) {
           grouped[date] = { date, messages: [] };
         }
         grouped[date].messages.push(message);
       });
-      return Object.values(grouped);
+
+      const groupedArray = Object.values(grouped).sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
+
+      return groupedArray;
     },
 
     formatDate(date) {
-      const parsedDate = new Date(date);
-      if (isNaN(parsedDate)) {
+      if (!date) {
         console.error("Invalid date format for:", date);
-        return "";
+        return "Unknown date";
+      }
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        console.error("Invalid date format for:", date);
+        return "Unknown date";
       }
 
       const options = {
@@ -114,21 +132,23 @@ export default {
       };
 
       const formattedDate = parsedDate.toLocaleDateString("en-GB", options);
-
       return formattedDate.replace(/(\w+)\s(\d{2})\s(\d{4})/, "$1, $2 $3.");
     },
 
-    formatTime(time) {
-      if (!time) {
-        console.error("Invalid time provided:", time);
+    formatTime(dateTime) {
+      if (!dateTime) {
+        console.error("Invalid date-time format provided:", dateTime);
         return "";
       }
+      
+      const timePart = dateTime.split(" ")[1];
+      const [hours, minutes] = timePart.split(":");
 
-      return time;
+      return `${hours}:${minutes}`;
     },
 
     formatPhone(phone) {
-      const cleaned = phone.replace(/\D/g, '');
+      const cleaned = phone.replace(/\D/g, "");
       let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
 
       if (match) {
@@ -141,7 +161,6 @@ export default {
       return message.direction === "inbound" ? "Patient" : message.author;
     },
 
-    //TODO: find a error why when you tried to send the message you catch the error of validate //
     sendMessage() {
       if (this.newMessage.trim() === "") {
         alert("Please enter a message.");
@@ -156,8 +175,17 @@ export default {
       axios
         .post(`/api/patients/${this.patientId}/sms/send`, payload)
         .then((response) => {
-          console.log('Message sent successfully:', response.data);
-          this.messages.push(response.data);
+          console.log("Message sent successfully:", response.data);
+
+          const messageData = response.data;
+          const now = new Date();
+          messageData.date =
+            messageData.date || now.toISOString().split("T")[0];
+          messageData.time =
+            messageData.time || now.toTimeString().split(" ")[0];
+
+          this.messages.push(messageData);
+          console.log(this.messages);
           this.newMessage = "";
         })
         .catch((error) => {
@@ -170,13 +198,14 @@ export default {
         $state.complete();
         return;
       }
-      
+
       axios
         .get(`/api/patients/${this.patientId}/sms/page/${this.currentPage + 1}`)
         .then((response) => {
           const newMessages = response.data.data;
           if (newMessages.length) {
             this.messages.push(...newMessages);
+            this.messages.sort((a, b) => new Date(a.date) - new Date(b.date));
             this.currentPage++;
             $state.loaded();
           } else {

@@ -7,17 +7,26 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Contracts\Models\PatientSms;
 use App\Patient;
+use Illuminate\Support\Facades\Log;
+
 
 class SmsController extends Controller
 {
   public function processSms(array $data)
   {
+    $patientId = $this->getPatientIdByNumber($data['From']);
+
+    if (!$patientId) {
+      \Log::warning('Patient not found for SMS from: ' . $data['From']);
+      return; 
+    }
+
     $smsData = [
       'from_number' => $data['From'],  
       'to_number' => $data['To'],      
       'direction' => 'Inbound',        
       'message_body' => $data['Body'],
-      'patient_id' => $this->getPatientIdByNumber($data['From']), 
+      'patient_id' => $patientId, 
     ];
 
     PatientSms::create($smsData);
@@ -60,21 +69,16 @@ class SmsController extends Controller
       ->orderBy('created_at', 'desc')
       ->paginate(15);
 
-    $formattedMessages = $messages->map(function($message) {
-      return [
-        'id' => $message->id,
-        'from_number' => $message->from_number,
-        'to_number' => $message->to_number,
-        'message' => $message->message_body,
-        'direction' => $message->direction,
+    $formattedMessages = $messages->getCollection()->map(function ($message) {
+      return array_merge($message->toArray(), [ 
         'author' => $message->user_id ? $message->user->name : $message->patient->name,
-        'time' => $message->created_at->format('H:i'),
-        'date' => $message->created_at->format('l, d M Y'),
-      ];
+      ]);
     });
-  
+
+    $messages->setCollection($formattedMessages);
+
     return response()->json([
-      'data' => $formattedMessages,
+      'data' => $messages,
       'pagination' => [
         'current_page' => $messages->currentPage(),
         'last_page' => $messages->lastPage(),
@@ -93,7 +97,7 @@ class SmsController extends Controller
       'from_number' => config('sms.company_number'),
       'to_number' => $validated['to_number'],
       'direction' => 'Outbound',
-      'message_body' => $validated['message_body'],
+      'message_body' => $validated['message'],
       'user_id' => auth()->id(),
       'patient_id' => $patient->id,
     ]);
@@ -112,7 +116,7 @@ class SmsController extends Controller
       $message = PatientSms::create([
         'from_number' => config('sms.company_number'),
         'to_number' => $validated['to_number'],
-        'direction' => 'Outbound',
+        'direction' => 'outbound',
         'message_body' => $validated['message'],
         'user_id' => auth()->id(),
         'patient_id' => $patient->id,

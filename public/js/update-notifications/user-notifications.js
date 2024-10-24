@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1758);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1764);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -12804,88 +12804,6 @@
 
 /***/ }),
 
-/***/ 1614:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Alert__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_moment_timezone__ = __webpack_require__(195);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_moment_timezone__);
-
-
-
-$(document).ready(function () {
-    var notificationsTable = $('#notificationsTable').DataTable({
-        ajax: {
-            url: window.location.pathname + '/api',
-            dataSrc: ''
-        },
-        "searching": true,
-        "pageLength": 15,
-        "lengthChange": false,
-        columns: [{ data: 'id', orderable: false, searchable: false }, { data: 'title', orderable: true, searchable: true }, {
-            data: 'show_date',
-            orderable: true,
-            searchable: true,
-            render: function render(data, type) {
-                if (type === 'display') {
-                    return data && __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
-                }
-
-                return data;
-            }
-        }, { data: 'is_required', orderable: true, searchable: false }, {
-            data: 'opened_at',
-            orderable: true,
-            searchable: true,
-            render: function render(data, type) {
-                if (type === 'display') {
-                    return data && __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
-                }
-
-                return data;
-            }
-        }, {
-            data: 'viewed_at',
-            orderable: true,
-            searchable: true,
-            render: function render(data, type) {
-                if (type === 'display') {
-                    return data && __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
-                }
-
-                return data;
-            }
-        }],
-        hideEmptyCols: true,
-        createdRow: function createdRow(row, data) {
-            $(row).addClass(data.rowClass);
-        }
-    });
-
-    $(document).on('click', '#notificationsTable > tbody > tr', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        var data = notificationsTable.row(this).data();
-        if (!data) {
-            return;
-        }
-
-        var previewDialog = $('#preview-dialog');
-        if (!previewDialog.length) {
-            return;
-        }
-
-        previewDialog.find('.modal-head').text(data.title);
-        previewDialog.find('.modal-body').html(data.content);
-        previewDialog.modal('show');
-    });
-});
-
-/***/ }),
-
 /***/ 162:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13067,6 +12985,88 @@ $(document).ready(function () {
 
 })));
 
+
+/***/ }),
+
+/***/ 1620:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Alert__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_moment_timezone__ = __webpack_require__(195);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_moment_timezone__);
+
+
+
+$(document).ready(function () {
+    var notificationsTable = $('#notificationsTable').DataTable({
+        ajax: {
+            url: window.location.pathname + '/api',
+            dataSrc: ''
+        },
+        "searching": true,
+        "pageLength": 15,
+        "lengthChange": false,
+        columns: [{ data: 'id', orderable: false, searchable: false }, { data: 'title', orderable: true, searchable: true }, {
+            data: 'show_date',
+            orderable: true,
+            searchable: true,
+            render: function render(data, type) {
+                if (type === 'display') {
+                    return data && __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
+                }
+
+                return data;
+            }
+        }, { data: 'is_required', orderable: true, searchable: false }, {
+            data: 'opened_at',
+            orderable: true,
+            searchable: true,
+            render: function render(data, type) {
+                if (type === 'display') {
+                    return data && __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
+                }
+
+                return data;
+            }
+        }, {
+            data: 'viewed_at',
+            orderable: true,
+            searchable: true,
+            render: function render(data, type) {
+                if (type === 'display') {
+                    return data && __WEBPACK_IMPORTED_MODULE_1_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
+                }
+
+                return data;
+            }
+        }],
+        hideEmptyCols: true,
+        createdRow: function createdRow(row, data) {
+            $(row).addClass(data.rowClass);
+        }
+    });
+
+    $(document).on('click', '#notificationsTable > tbody > tr', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var data = notificationsTable.row(this).data();
+        if (!data) {
+            return;
+        }
+
+        var previewDialog = $('#preview-dialog');
+        if (!previewDialog.length) {
+            return;
+        }
+
+        previewDialog.find('.modal-head').text(data.title);
+        previewDialog.find('.modal-body').html(data.content);
+        previewDialog.modal('show');
+    });
+});
 
 /***/ }),
 
@@ -14053,10 +14053,10 @@ $(document).ready(function () {
 
 /***/ }),
 
-/***/ 1758:
+/***/ 1764:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(1614);
+module.exports = __webpack_require__(1620);
 
 
 /***/ }),

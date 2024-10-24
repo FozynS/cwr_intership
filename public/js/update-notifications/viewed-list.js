@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1759);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1765);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -12804,56 +12804,6 @@
 
 /***/ }),
 
-/***/ 1615:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_moment_timezone__ = __webpack_require__(195);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_moment_timezone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_moment_timezone__);
-
-
-$(document).ready(function () {
-    var notificationsTable = $('#notificationsTable').DataTable({
-        ajax: {
-            url: window.location.pathname + '/api',
-            dataSrc: ''
-        },
-        "searching": true,
-        "pageLength": 15,
-        "lengthChange": false,
-        columns: [{ data: 'id', orderable: false, searchable: false }, { data: 'name', orderable: true, searchable: true }, { data: 'email', orderable: true, searchable: true }, {
-            data: 'opened_at',
-            orderable: true,
-            searchable: true,
-            render: function render(data, type) {
-                if (type === 'display') {
-                    return data && __WEBPACK_IMPORTED_MODULE_0_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
-                }
-
-                return data;
-            }
-        }, {
-            data: 'viewed_at',
-            orderable: true,
-            searchable: true,
-            render: function render(data, type) {
-                if (type === 'display') {
-                    return data && __WEBPACK_IMPORTED_MODULE_0_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
-                }
-
-                return data;
-            }
-        }],
-        hideEmptyCols: true,
-        createdRow: function createdRow(row, data) {
-            $(row).addClass(data.rowClass);
-        }
-    });
-});
-
-/***/ }),
-
 /***/ 162:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13035,6 +12985,56 @@ $(document).ready(function () {
 
 })));
 
+
+/***/ }),
+
+/***/ 1621:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_moment_timezone__ = __webpack_require__(195);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_moment_timezone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_moment_timezone__);
+
+
+$(document).ready(function () {
+    var notificationsTable = $('#notificationsTable').DataTable({
+        ajax: {
+            url: window.location.pathname + '/api',
+            dataSrc: ''
+        },
+        "searching": true,
+        "pageLength": 15,
+        "lengthChange": false,
+        columns: [{ data: 'id', orderable: false, searchable: false }, { data: 'name', orderable: true, searchable: true }, { data: 'email', orderable: true, searchable: true }, {
+            data: 'opened_at',
+            orderable: true,
+            searchable: true,
+            render: function render(data, type) {
+                if (type === 'display') {
+                    return data && __WEBPACK_IMPORTED_MODULE_0_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
+                }
+
+                return data;
+            }
+        }, {
+            data: 'viewed_at',
+            orderable: true,
+            searchable: true,
+            render: function render(data, type) {
+                if (type === 'display') {
+                    return data && __WEBPACK_IMPORTED_MODULE_0_moment_timezone___default()(data).format('MM/DD/YYYY hh:mm A');
+                }
+
+                return data;
+            }
+        }],
+        hideEmptyCols: true,
+        createdRow: function createdRow(row, data) {
+            $(row).addClass(data.rowClass);
+        }
+    });
+});
 
 /***/ }),
 
@@ -14021,10 +14021,10 @@ $(document).ready(function () {
 
 /***/ }),
 
-/***/ 1759:
+/***/ 1765:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(1615);
+module.exports = __webpack_require__(1621);
 
 
 /***/ }),
