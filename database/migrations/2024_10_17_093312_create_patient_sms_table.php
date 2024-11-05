@@ -17,10 +17,12 @@ class CreatePatientSmsTable extends Migration
         $table->increments('id'); 
         $table->string('from_number'); 
         $table->string('to_number'); 
-        $table->enum('direction', ['inbound', 'outbound']); 
+        $table->integer('direction'); 
         $table->text('message_body'); 
         $table->unsignedInteger('user_id')->nullable(); 
         $table->integer('patient_id'); 
+        $table->boolean('is_read')->default(false);
+        $table->boolean('is_archived')->default(false);
         $table->timestamps(); 
 
         $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');

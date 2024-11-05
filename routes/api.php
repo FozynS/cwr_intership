@@ -244,6 +244,28 @@ Route::namespace('Api')->group(function () {
         );
     });
 
+    Route::prefix('patients-sms-dashboard')->group(function() { 
+
+      Route::prefix('all-messages')->group(function () {
+        Route::get('/', 'SmsController@getAllSms');
+        Route::get('unread-status', 'SmsController@unreadCount');
+        Route::post('read-status', 'SmsController@updateReadStatus');
+        Route::post('unread-status', 'SmsController@updateUnreadStatus');
+        Route::post('archived-status', 'SmsController@updateArchivedStatus');
+      });
+
+      Route::prefix('{patient}')->group(function() {
+          Route::get('phone-numbers', 'SmsController@getPhoneNumbers');
+          Route::prefix('sms')->group(function () {
+              Route::get('count', 'SmsController@getSmsCount');
+              Route::get('/', 'SmsController@index');
+              Route::post('/', 'SmsController@store');
+              Route::post('send', 'SmsController@sendMessage');
+              Route::get('page/{page}', 'SmsController@loadMoreMessages');
+          });
+      });
+  });
+
     Route::prefix('patients')->group(function () {
         Route::group(['middleware' => ['user-provider', 'profile-completed']], function () {
             Route::post('{patient}/appointments/{appointment}/pay', 'Appointment\CompleteAppointmentController@pay');
@@ -343,14 +365,6 @@ Route::namespace('Api')->group(function () {
     });
 
     Route::post('/webhook/twilio/sms', 'Webhook\Twilio\SmsController@sms');
-
-    Route::post('/sms/incoming', 'SmsController@processSms');
-    Route::get('/patients/{patient}/sms/count', 'SmsController@getSmsCount');
-    Route::get('/patients/{patient}/sms', 'SmsController@index');
-    Route::post('/patients/{patient}/sms', 'SmsController@store');
-    Route::post('/patients/{patient}/sms/send', 'SmsController@sendMessage');
-    Route::get('/patients/{patient}/phone-numbers', 'SmsController@getPhoneNumbers');
-    Route::get('/patients/{patient}/sms/page/{page}', 'SmsController@loadMoreMessages');
 
     Route::prefix('secretaries-dashboard')->middleware(['admin-secretary'])->group(function () {
         Route::get('important-for-today', 'SecretariesDashboardController@getImportantForToday');

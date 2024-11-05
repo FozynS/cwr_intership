@@ -5,107 +5,88 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Contracts\Models\PatientSms;
+use App\Repositories\Provider\PatientSms\PatientSmsRepositoryInterface;
+use App\Http\Requests\PatientSms\PatientSmsRequest;
+use App\Http\Requests\PatientSms\UpdateSmsStatusRequest;
 use App\Patient;
-use Illuminate\Support\Facades\Log;
-
 
 class SmsController extends Controller
 {
-  public function processSms(array $data)
-  {
-    $patientId = $this->getPatientIdByNumber($data['From']);
 
-    if (!$patientId) {
-      \Log::warning('Patient not found for SMS from: ' . $data['From']);
-      return; 
-    }
-
-    $smsData = [
-      'from_number' => $data['From'],  
-      'to_number' => $data['To'],      
-      'direction' => 'Inbound',        
-      'message_body' => $data['Body'],
-      'patient_id' => $patientId, 
-    ];
-
-    PatientSms::create($smsData);
-  }
-
-  private function getPatientIdByNumber($number)
-  {
-    $patient = Patient::where('cell_phone', $number)
-      ->orWhere('home_phone', $number)
-      ->orWhere('work_phone', $number)
-      ->first();
+  /**
+   * @var PatientSmsRepositoryInterface
+   */
+    private $smsRepository;
     
-    return $patient ? $patient->id : null;
+  /**
+   * @param PatientSmsRepositoryInterface $smsRepository
+   */
+
+  public function __construct(PatientSmsRepositoryInterface $smsRepository)
+  {
+    $this->smsRepository = $smsRepository;
   }
 
-  public function getPhoneNumbers(Patient $patient)
+  public function getPhoneNumbers(Patient $patient): JsonResponse
   {
-    return response()->json([
-      'phoneNumbers' => [
-        $patient->cell_phone,
-        $patient->home_phone,
-        $patient->work_phone,
-      ],
-    ]);
+    $phoneNumbers = $this->smsRepository->getPhoneNumbers($patient);
+    return response()->json(['phoneNumbers' => $phoneNumbers]);
   }
 
   public function getSmsCount(Patient $patient): JsonResponse
   {
-    if (!$patient) {
-      return response()->json(['error' => 'Patient not found'], 404);
-    }
-
-    $smsCount = PatientSms::where('patient_id', $patient->id)->count();
+    $smsCount = $this->smsRepository->getSmsCount($patient);
     return response()->json(['count' => $smsCount]);
   }
 
-  public function index(Patient $patient)
+  public function getAllSms(PatientSmsRequest $request) : JsonResponse 
   {
-    $messages = PatientSms::where('patient_id', $patient->id)
-      ->orderBy('created_at', 'desc')
-      ->paginate(15);
+    $allMessages = $this->smsRepository->getAllMessages($request);
 
-    $formattedMessages = $messages->getCollection()->map(function ($message) {
-      return array_merge($message->toArray(), [ 
-        'author' => $message->user_id ? $message->user->name : $message->patient->name,
-      ]);
-    });
-
-    $messages->setCollection($formattedMessages);
-
-    return response()->json([
-      'data' => $messages,
-      'pagination' => [
-        'current_page' => $messages->currentPage(),
-        'last_page' => $messages->lastPage(),
-      ],
-    ]);
+    if ($allMessages->isEmpty()) {
+      return response()->json(['message' => 'No messages found'], 404);
+    }
+    
+    return response()->json($allMessages);
   }
-  
-  public function store(Request $request, Patient $patient)
+
+  public function unreadCount ()
+  {
+    return $this->smsRepository->smsUnreadCount();
+  }
+
+  public function updateReadStatus (UpdateSmsStatusRequest $request)
+  {
+    return $this->smsRepository->updateSmsListReadStatus($request);
+  }
+
+  public function updateUnreadStatus (UpdateSmsStatusRequest $request)
+  {
+    return $this->smsRepository->updateSmsListUnreadStatus($request);
+  }
+  public function updateArchivedStatus (UpdateSmsStatusRequest $request)
+  {
+    return $this->smsRepository->updateSmsListArchivedStatus($request);
+  }
+
+  public function index(Patient $patient): JsonResponse
+  {
+    $messages = $this->smsRepository->getMessages($patient);
+    return response()->json($messages);
+  }
+
+  public function store(Request $request, Patient $patient): JsonResponse
   {
     $validated = $request->validate([
       'to_number' => 'required|string|max:15',
       'message' => 'required|string|max:1000',
     ]);
 
-    $message = PatientSms::create([
-      'from_number' => config('sms.company_number'),
-      'to_number' => $validated['to_number'],
-      'direction' => 'Outbound',
-      'message_body' => $validated['message'],
-      'user_id' => auth()->id(),
-      'patient_id' => $patient->id,
-    ]);
-    
+    $message = $this->smsRepository->storeSms($validated, $patient);
     return response()->json($message);
   }
 
-  public function sendMessage(Request $request, Patient $patient)
+  public function sendMessage(Request $request, Patient $patient): JsonResponse
   {
     $validated = $request->validate([
       'to_number' => 'required|string|max:15',
@@ -113,32 +94,16 @@ class SmsController extends Controller
     ]);
 
     try {
-      $message = PatientSms::create([
-        'from_number' => config('sms.company_number'),
-        'to_number' => $validated['to_number'],
-        'direction' => 'outbound',
-        'message_body' => $validated['message'],
-        'user_id' => auth()->id(),
-        'patient_id' => $patient->id,
-      ]);
-
+      $message = $this->smsRepository->sendMessage($validated, $patient);
       return response()->json($message);
     } catch (\Exception $e) {
-      \Log::error('Error when sending a message: ' . $e->getMessage());
       return response()->json(['error' => 'Error when sending a message'], 500);
     }
   }
 
-  public function loadMoreMessages(Patient $patient, $page)
+  public function loadMoreMessages(Patient $patient, $page): JsonResponse
   {
-    if (!$patient) {
-      return response()->json(['error' => 'Patient not found'], 404);
-    }
-
-    $messages = PatientSms::where('patient_id', $patient->id)
-      ->orderBy('created_at', 'desc')
-      ->paginate(15, ['*'], 'page', $page);
-
+    $messages = $this->smsRepository->loadMoreMessages($patient, $page);
     return response()->json($messages);
   }
 }

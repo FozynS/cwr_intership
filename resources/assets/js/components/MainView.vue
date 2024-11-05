@@ -2835,12 +2835,8 @@ export default {
   },
   methods: {
     getPatientId() {
-      console.log( this.patient);
       return Number(this.$route.params.id);
     },
-    // handleEvent(payload) {
-    //   console.log('Event received with payload:', payload);
-    // },
     openEmailUnsubscribedDialog(email) {
       this.restoreEmail = email;
       this.showEmailUnsubscribedDialog = true;
@@ -3011,9 +3007,6 @@ export default {
           this.openUploadForm();
           window.setTimeout(() => {}, 1000);
         }
-        // if (tabName === "sms") {
-        //   console.log(this.$route.params.id);
-        // }
         this.loadTabData(tabName);
 
         if (tabName === "timeline") {
@@ -3198,7 +3191,6 @@ export default {
       };
       this.visible_only_for_admin = false;
       this.$store.dispatch("setDocumentType", data).then((response) => {
-        console.log("resp status ", response.status);
         if (response.status === 401) {
           this.has_document_without_type = false;
 
@@ -3455,7 +3447,6 @@ export default {
           method: "fax",
         })
         .then((response) => {
-          console.log(response.status, "response status");
           this.hideFaxModal();
           this.$store.dispatch("getPatientNotesWithDocumentsPaginated", {
             id: parseInt(this.$route.params.id),
@@ -3470,7 +3461,6 @@ export default {
           }
         })
         .catch((error) => {
-          console.log(error.response.status, "error status");
           this.hideFaxModal();
           this.sending = false;
           if (error.response.status === 403) {
@@ -3480,7 +3470,6 @@ export default {
               "Fax could not have been sent due to connection problems. Please try again later."
             );
           }
-          console.log(error);
         });
     },
 

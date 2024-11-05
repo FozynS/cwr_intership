@@ -7,8 +7,8 @@
         :key="message.id"
         class="message"
         :class="{
-          'message-sent': message.direction === 'outbound',
-          'message-received': message.direction === 'inbound',
+          'message-received': message.direction === 1,
+          'message-sent': message.direction === 2,
         }"
       >
         <div class="message-author">{{ getAuthor(message) }}</div>
@@ -83,13 +83,13 @@ export default {
   methods: {
     fetchMessages() {
       axios
-        .get(`/api/patients/${this.patientId}/sms`)
+        .get(`/api/patients-sms-dashboard/${this.patientId}/sms`)
         .then((response) => {
-          this.messages = response.data.data.data.sort(
+          this.messages = response.data.data.sort(
             (a, b) => new Date(a.created_at) - new Date(b.created_at)
           );
-          this.totalPages = response.data.pagination.last_page;
-          this.currentPage = response.data.pagination.current_page;
+          this.totalPages = response.data.last_page;
+          this.currentPage = response.data.current_page;
         })
         .catch((error) => {
           console.error("Error loading messages:", error);
@@ -158,7 +158,7 @@ export default {
     },
 
     getAuthor(message) {
-      return message.direction === "inbound" ? "Patient" : message.author;
+      return message.direction === 1 ? "Patient" : message.author;
     },
 
     sendMessage() {
@@ -173,10 +173,8 @@ export default {
       };
 
       axios
-        .post(`/api/patients/${this.patientId}/sms/send`, payload)
+        .post(`/api/patients-sms-dashboard/${this.patientId}/sms/send`, payload)
         .then((response) => {
-          console.log("Message sent successfully:", response.data);
-
           const messageData = response.data;
           const now = new Date();
           messageData.date =
@@ -185,7 +183,6 @@ export default {
             messageData.time || now.toTimeString().split(" ")[0];
 
           this.messages.push(messageData);
-          console.log(this.messages);
           this.newMessage = "";
         })
         .catch((error) => {
@@ -200,7 +197,7 @@ export default {
       }
 
       axios
-        .get(`/api/patients/${this.patientId}/sms/page/${this.currentPage + 1}`)
+        .get(`/api/patients-sms-dashboard/${this.patientId}/sms/page/${this.currentPage + 1}`)
         .then((response) => {
           const newMessages = response.data.data;
           if (newMessages.length) {

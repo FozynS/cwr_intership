@@ -90,6 +90,8 @@ use App\Repositories\Provider\Comments\ProviderCommentRepository;
 use App\Repositories\Provider\Comments\ProviderCommentRepositoryInterface;
 use App\Repositories\TreatmentModality\TreatmentModalityRepository;
 use App\Repositories\TreatmentModality\TreatmentModalityRepositoryInterface;
+use App\Repositories\Provider\PatientSms\PatientSmsRepositoryInterface;
+use App\Repositories\PatientSms\PatientSmsRepository;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
 
@@ -128,6 +130,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(RingcentralRepositoryInterface::class, RingcentralRepository::class);
         $this->app->bind(MenuApiRepositoryInterface::class, MenuApiRepository::class);
         $this->app->bind(CheckChargeCancellationRepositoryInterface::class, CheckChargeCancellationRepository::class);
+        $this->app->bind(PatientSmsRepositoryInterface::class, PatientSmsRepository::class);
 
         $this->app->bind(AbstractPaymentRepository::class, function ($app) {
             /** @var Request $request */

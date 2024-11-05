@@ -3,10 +3,12 @@
 namespace App\Repositories\MenuApiForReactLayouts;
 
 use App\User;
+use App\Patient;
 use App\KaiserAppointment;
 use App\Models\Patient\PatientNoteUnlockRequest;
 use App\Models\Patient\PatientRemovalRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Contracts\Models\PatientSms;
 
 class MenuApiRepository implements MenuApiRepositoryInterface
 {
@@ -67,6 +69,7 @@ class MenuApiRepository implements MenuApiRepositoryInterface
             ['name' => 'Home', 'link' => '/chart'],
             ['name' => 'Patients', 'link' => '/statistic/patients-assigned-to-therapists'],
             ['name' => 'Scheduling', 'link' => '/chart/calendar'],
+            ['name' => 'SMS', 'link' => '/sms-from-patients', 'items_count' => PatientSms::countUnread()],
             ['name' => 'More', 'submenu' => $moreSubMenu],
         ];
 
@@ -117,7 +120,7 @@ class MenuApiRepository implements MenuApiRepositoryInterface
             ['name' => 'Notifications', 'link' => '/update-notifications/history'],
             ['name' => 'Training', 'link' => '/user/training']
         ];
-
+        $links[] = ['name' => 'SMS', 'link' => '/sms-from-patients', 'items_count' => PatientSms::countUnread()];
         $links[] = ['name' => 'More', 'submenu' => $moreSubMenu];
 
         return ['links' => $links, 'user_links' => $userLinks, 'user_name' => $user->getFullName()];
@@ -188,6 +191,7 @@ class MenuApiRepository implements MenuApiRepositoryInterface
         ];
         $links[] = ['name' => 'Lucet', 'link' => 'https://polestarapp.com/admin/login'];
         $links[] = ['name' => 'Sync with OA', 'link' => '/dashboard/parsers'];
+        $links[] = ['name' => 'SMS', 'link' => '/sms-from-patients', 'items_count' => PatientSms::countUnread()];
 
         $moreSubMenu = [
             ['name' => 'Faxes', 'link' => '/faxes'],

@@ -43,7 +43,7 @@ class PatientSmsSeeder extends Seeder
         PatientSms::create([
           'from_number' => $companyNumber,
           'to_number' => $patient->cell_phone,
-          'direction' => 'Outbound',
+          'direction' => PatientSms::SMS_DIRECTION_OUTBOUND_ID,
           'message_body' => $faker->paragraph(rand(1, 3)),
           'user_id' => $users->random()->id,
           'patient_id' => $patient->id,
@@ -56,7 +56,7 @@ class PatientSmsSeeder extends Seeder
         PatientSms::create([
           'from_number' => $patient->cell_phone,
           'to_number' => $companyNumber,
-          'direction' => 'Inbound',
+          'direction' => PatientSms::SMS_DIRECTION_INBOUND_ID,
           'message_body' => $faker->sentence(rand(5, 15)),
           'user_id' => null,
           'patient_id' => $patient->id,

@@ -167015,13 +167015,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   },
   methods: {
     getPatientId: function getPatientId() {
-      console.log(this.patient);
       return Number(this.$route.params.id);
     },
-
-    // handleEvent(payload) {
-    //   console.log('Event received with payload:', payload);
-    // },
     openEmailUnsubscribedDialog: function openEmailUnsubscribedDialog(email) {
       this.restoreEmail = email;
       this.showEmailUnsubscribedDialog = true;
@@ -167162,9 +167157,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           this.openUploadForm();
           window.setTimeout(function () {}, 1000);
         }
-        // if (tabName === "sms") {
-        //   console.log(this.$route.params.id);
-        // }
         this.loadTabData(tabName);
 
         if (tabName === "timeline") {
@@ -167322,7 +167314,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       };
       this.visible_only_for_admin = false;
       this.$store.dispatch("setDocumentType", data).then(function (response) {
-        console.log("resp status ", response.status);
         if (response.status === 401) {
           _this12.has_document_without_type = false;
 
@@ -167546,7 +167537,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         document_model: this.sendingDocumentModel,
         method: "fax"
       }).then(function (response) {
-        console.log(response.status, "response status");
         _this16.hideFaxModal();
         _this16.$store.dispatch("getPatientNotesWithDocumentsPaginated", {
           id: parseInt(_this16.$route.params.id)
@@ -167558,7 +167548,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           window.alert("Fax could not have been sent due to connection problems. Please try again later.");
         }
       }).catch(function (error) {
-        console.log(error.response.status, "error status");
         _this16.hideFaxModal();
         _this16.sending = false;
         if (error.response.status === 403) {
@@ -167566,7 +167555,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         } else {
           window.alert("Fax could not have been sent due to connection problems. Please try again later.");
         }
-        console.log(error);
       });
     },
     init: function init() {
@@ -175200,12 +175188,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     fetchMessages: function fetchMessages() {
       var _this = this;
 
-      __WEBPACK_IMPORTED_MODULE_1_axios___default.a.get("/api/patients/" + this.patientId + "/sms").then(function (response) {
-        _this.messages = response.data.data.data.sort(function (a, b) {
+      __WEBPACK_IMPORTED_MODULE_1_axios___default.a.get("/api/patients-sms-dashboard/" + this.patientId + "/sms").then(function (response) {
+        _this.messages = response.data.data.sort(function (a, b) {
           return new Date(a.created_at) - new Date(b.created_at);
         });
-        _this.totalPages = response.data.pagination.last_page;
-        _this.currentPage = response.data.pagination.current_page;
+        _this.totalPages = response.data.last_page;
+        _this.currentPage = response.data.current_page;
       }).catch(function (error) {
         console.error("Error loading messages:", error);
       });
@@ -175272,7 +175260,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return phone;
     },
     getAuthor: function getAuthor(message) {
-      return message.direction === "inbound" ? "Patient" : message.author;
+      return message.direction === 1 ? "Patient" : message.author;
     },
     sendMessage: function sendMessage() {
       var _this2 = this;
@@ -175287,16 +175275,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         message: this.newMessage
       };
 
-      __WEBPACK_IMPORTED_MODULE_1_axios___default.a.post("/api/patients/" + this.patientId + "/sms/send", payload).then(function (response) {
-        console.log("Message sent successfully:", response.data);
-
+      __WEBPACK_IMPORTED_MODULE_1_axios___default.a.post("/api/patients-sms-dashboard/" + this.patientId + "/sms/send", payload).then(function (response) {
         var messageData = response.data;
         var now = new Date();
         messageData.date = messageData.date || now.toISOString().split("T")[0];
         messageData.time = messageData.time || now.toTimeString().split(" ")[0];
 
         _this2.messages.push(messageData);
-        console.log(_this2.messages);
         _this2.newMessage = "";
       }).catch(function (error) {
         console.error("Error when sending a message:", error);
@@ -175310,7 +175295,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         return;
       }
 
-      __WEBPACK_IMPORTED_MODULE_1_axios___default.a.get("/api/patients/" + this.patientId + "/sms/page/" + (this.currentPage + 1)).then(function (response) {
+      __WEBPACK_IMPORTED_MODULE_1_axios___default.a.get("/api/patients-sms-dashboard/" + this.patientId + "/sms/page/" + (this.currentPage + 1)).then(function (response) {
         var newMessages = response.data.data;
         if (newMessages.length) {
           var _messages;
@@ -227047,7 +227032,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vuex
 
             return __WEBPACK_IMPORTED_MODULE_5_axios___default()({
                 method: "get",
-                url: "/api/patients/" + patientId + "/sms/count"
+                url: "/api/patients-sms-dashboard/" + patientId + "/sms/count"
             }).then(function (response) {
                 var data = response.data;
                 commit('SET_SMS_COUNT', data.count);
@@ -395368,8 +395353,8 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
         key: message.id,
         staticClass: "message",
         class: {
-          'message-sent': message.direction === 'outbound',
-          'message-received': message.direction === 'inbound',
+          'message-received': message.direction === 1,
+          'message-sent': message.direction === 2,
         }
       }, [_c('div', {
         staticClass: "message-author"

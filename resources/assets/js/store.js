@@ -530,7 +530,7 @@ export default new Vuex.Store({
       getSmsCount({ commit }, { patientId }) {
           return axios({
               method: "get",
-              url: `/api/patients/${patientId}/sms/count`,
+              url: `/api/patients-sms-dashboard/${patientId}/sms/count`,
             })
             .then((response) => {
               const data = response.data;

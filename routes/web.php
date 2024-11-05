@@ -664,6 +664,11 @@ Route::get('/faxes', function () {
     return \File::get(public_path() . '/react-app/index.html');
 })->name('react.layouts')->middleware(['admin-secretary']);
 
+//Sms
+Route::get('/sms-from-patients', function () {
+    return \File::get(public_path() . '/react-app/index.html');
+})->name('react.layouts')->middleware(['admin-secretary']);
+
 Route::get('/secretary-dashboard', function () {
     return \File::get(public_path() . '/react-app/index.html');
 })->name('react.layouts')->middleware(['admin-secretary']);
