@@ -8,9 +8,6 @@ use App\Http\Requests\PatientSms\UpdateSmsStatusRequest;
 
 interface PatientSmsRepositoryInterface
 {
-
-  public function getPatientIdByNumber(string $number);
-
   public function getPhoneNumbers(Patient $patient);
 
   public function getSmsCount(Patient $patient): int;

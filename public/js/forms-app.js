@@ -175252,16 +175252,44 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     },
     formatPhone: function formatPhone(phone) {
       var cleaned = phone.replace(/\D/g, "");
-      var match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+      var match = cleaned.match(/^1?(\d{3})(\d{3})(\d{4})$/);
 
       if (match) {
-        return "(" + match[1] + ")-" + match[2] + "-" + match[3];
+        return match[1] ? "(" + match[1] + ")-" + match[2] + "-" + match[3] : phone;
       }
       return phone;
     },
-    getAuthor: function getAuthor(message) {
-      return message.direction === 1 ? "Patient" : message.author;
+    formatMessageBody: function formatMessageBody(message) {
+      var match = message.message_body.match(/^\((\d+)\/(\d+)\)/);
+      var isMessageFromPatient = message.author === 'Patient';
+
+      if (match) {
+        var currentPart = parseInt(match[1], 10);
+
+        if (currentPart < 2 && message.author && !isMessageFromPatient) {
+          var role = message.author === 'Xyz Test' ? 'Therapist' : 'Admin';
+          return "<strong>Message from " + message.author + ", " + role + " @ CWR:</strong> " + message.message_body;
+        }
+
+        return message.message_body;
+      }
+
+      if (message.author && !isMessageFromPatient) {
+        var _role = message.author === 'Xyz Test' ? 'Therapist' : 'Admin';
+        return "<strong>Message from " + message.author + ", " + _role + " @ CWR:</strong> " + message.message_body;
+      }
+
+      return message.message_body;
     },
+    getAuthor: function getAuthor(message) {
+      return message.direction === 1 ? "Patient" : message.author + " \u2022 " + this.formatPhone(message.from_number);
+    },
+
+
+    /**
+       *  5, 7 
+      */
+
     sendMessage: function sendMessage() {
       var _this2 = this;
 
@@ -175313,6 +175341,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         console.error("Error loading additional messages:", error);
         $state.complete();
       });
+    },
+    randomId: function randomId() {
+      var min = 0;
+      var max = Math.floor(1000);
+      var randomIndex = Math.floor(Math.random() * (max - min)) + min;
+      return randomIndex;
     }
   },
   mounted: function mounted() {
@@ -237758,7 +237792,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n.sms-tab[data-v-c129bc16] {\n  box-sizing: border-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: column;\n      flex-direction: column;\n  max-width: 95%;\n  margin: 0 auto;\n  margin-bottom: 50px;\n  background-color: #f9f9f9;\n  border: 1px solid gray;\n  border-radius: 5px;\n}\n.message-date[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-align: center;\n      align-items: center;\n  -ms-flex-pack: center;\n      justify-content: center;\n  height: 50px;\n  color: #2e2e2e;\n  margin: 20px 0 10px;\n  background: #adadad;\n  text-align: center;\n  font-size: 18px;\n  font-weight: bold;\n}\n.message-container[data-v-c129bc16] {\n  margin-bottom: 20px;\n}\n.message[data-v-c129bc16] {\n  margin-bottom: 10px;\n  width: 45%;\n  padding: 10px 15px;\n  position: relative;\n}\n.message-sent[data-v-c129bc16] {\n  margin-left: auto;\n  margin-right: 30px;\n}\n.message-sent .message-text-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row-reverse;\n      flex-direction: row-reverse;\n  -ms-flex-pack: justify;\n      justify-content: space-between;\n  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);\n  background-color: #b3d8ff;\n}\n.message-sent .message-time[data-v-c129bc16] {\n  margin-left: 20px;\n}\n.message-sent .message-author[data-v-c129bc16] {\n  text-align: right;\n}\n.message-received[data-v-c129bc16] {\n  text-align: left;\n  margin-right: auto;\n  margin-left: 30px;\n}\n.message-received .message-text-container[data-v-c129bc16] {\n  background-color: #ccc;\n  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);\n}\n.message-received .message-time[data-v-c129bc16] {\n  margin-right: 20px;\n}\n.message-author[data-v-c129bc16] {\n  font-size: 12px;\n  font-weight: bold;\n  color: #333;\n  margin-bottom: 5px;\n}\n.message-text-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-align: center;\n      align-items: center;\n  border-radius: 8px;\n}\n.message-text[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  font-size: 14px;\n  color: #333;\n  min-height: 50px;\n  padding: 10px;\n  border-radius: 5px;\n  -ms-flex-pack: center;\n      justify-content: center;\n  -ms-flex-align: center;\n      align-items: center;\n}\n.message-time[data-v-c129bc16] {\n  font-size: 13px;\n  color: #999;\n}\n.send-message-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  height: 70px;\n  width: 100%;\n  -ms-flex-align: center;\n      align-items: center;\n}\n.select-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-pack: center;\n      justify-content: center;\n  -ms-flex-align: center;\n      align-items: center;\n  background: #9f9f9f;\n  width: 20%;\n  height: 100%;\n}\n.message-input-section[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: column;\n      flex-direction: column;\n}\n.phone-select[data-v-c129bc16] {\n  border: 1px solid #ccc;\n  border-radius: 5px;\n  width: 90%;\n  height: 40%;\n}\n.phone-select[data-v-c129bc16]:active {\n  border: 1.5px solid #63c2f1;\n}\ntextarea[data-v-c129bc16] {\n  width: 100%;\n  padding: 10px;\n  border: 1px solid #ccc;\n  height: 100%;\n  resize: none;\n}\nbutton[data-v-c129bc16] {\n  background-color: #007bff;\n  color: white;\n  padding: 10px 15px;\n  border: none;\n  border-bottom-right-radius: 4px;\n  cursor: pointer;\n  width: 10%;\n  height: 100%;\n}\nbutton[data-v-c129bc16]:hover {\n  background-color: #0056b3;\n}\n.infinite-loading-wrapper[data-v-c129bc16] {\n  text-align: center;\n  padding: 15px;\n}\n", ""]);
+exports.push([module.i, "\n.sms-tab[data-v-c129bc16] {\n  box-sizing: border-box;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: column;\n      flex-direction: column;\n  max-width: 95%;\n  margin: 0 auto;\n  margin-bottom: 50px;\n  background-color: #f9f9f9;\n  border: 1px solid gray;\n  border-radius: 5px;\n}\n.message-date[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-align: center;\n      align-items: center;\n  -ms-flex-pack: center;\n      justify-content: center;\n  height: 50px;\n  color: #2e2e2e;\n  margin: 20px 0 10px;\n  background: #adadad;\n  text-align: center;\n  font-size: 18px;\n  font-weight: bold;\n}\n.message-container[data-v-c129bc16] {\n  margin-bottom: 20px;\n}\n.message[data-v-c129bc16] {\n  margin-bottom: 10px;\n  width: 45%;\n  padding: 10px 15px;\n  position: relative;\n}\n.message-sent[data-v-c129bc16] {\n  margin-left: auto;\n  margin-right: 30px;\n}\n.message-sent .message-text-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row-reverse;\n      flex-direction: row-reverse;\n  -ms-flex-pack: justify;\n      justify-content: space-between;\n  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);\n  background-color: #b3d8ff;\n}\n.message-sent .message-time[data-v-c129bc16] {\n  margin-left: 20px;\n}\n.message-sent .message-author[data-v-c129bc16] {\n  text-align: right;\n}\n.message-received[data-v-c129bc16] {\n  text-align: left;\n  margin-right: auto;\n  margin-left: 30px;\n}\n.message-received .message-text-container[data-v-c129bc16] {\n  background-color: #ccc;\n  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);\n}\n.message-received .message-time[data-v-c129bc16] {\n  margin-right: 20px;\n}\n.message-author[data-v-c129bc16] {\n  font-size: 12px;\n  font-weight: bold;\n  color: #333;\n  margin-bottom: 5px;\n}\n.message-text-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-align: center;\n      align-items: center;\n  border-radius: 8px;\n}\n.message-text[data-v-c129bc16] {\n  font-size: 14px;\n  color: #333;\n  min-height: 50px;\n  padding: 10px;\n  border-radius: 5px;\n}\n.message-time[data-v-c129bc16] {\n  font-size: 13px;\n  color: #999;\n}\n.send-message-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  height: 70px;\n  width: 100%;\n  -ms-flex-align: center;\n      align-items: center;\n}\n.select-container[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-pack: center;\n      justify-content: center;\n  -ms-flex-align: center;\n      align-items: center;\n  background: #9f9f9f;\n  width: 20%;\n  height: 100%;\n}\n.message-input-section[data-v-c129bc16] {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: column;\n      flex-direction: column;\n}\n.phone-select[data-v-c129bc16] {\n  border: 1px solid #ccc;\n  border-radius: 5px;\n  width: 90%;\n  height: 40%;\n}\n.phone-select[data-v-c129bc16]:active {\n  border: 1.5px solid #63c2f1;\n}\ntextarea[data-v-c129bc16] {\n  width: 100%;\n  padding: 10px;\n  border: 1px solid #ccc;\n  height: 100%;\n  resize: none;\n}\nbutton[data-v-c129bc16] {\n  background-color: #007bff;\n  color: white;\n  padding: 10px 15px;\n  border: none;\n  border-bottom-right-radius: 4px;\n  cursor: pointer;\n  width: 10%;\n  height: 100%;\n}\nbutton[data-v-c129bc16]:hover {\n  background-color: #0056b3;\n}\n.infinite-loading-wrapper[data-v-c129bc16] {\n  text-align: center;\n  padding: 15px;\n}\n", ""]);
 
 // exports
 
@@ -395350,7 +395384,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       staticClass: "message-date"
     }, [_vm._v(_vm._s(_vm.formatDate(messageGroup.date)))]), _vm._v(" "), _vm._l((messageGroup.messages), function(message) {
       return _c('div', {
-        key: message.id,
+        key: message.id + '-' + _vm.randomId(),
         staticClass: "message",
         class: {
           'message-received': message.direction === 1,
@@ -395361,8 +395395,11 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       }, [_vm._v(_vm._s(_vm.getAuthor(message)))]), _vm._v(" "), _c('div', {
         staticClass: "message-text-container"
       }, [_c('div', {
-        staticClass: "message-text"
-      }, [_vm._v(_vm._s(message.message_body))]), _vm._v(" "), _c('div', {
+        staticClass: "message-text",
+        domProps: {
+          "innerHTML": _vm._s(_vm.formatMessageBody(message))
+        }
+      }), _vm._v(" "), _c('div', {
         staticClass: "message-time"
       }, [_vm._v(_vm._s(_vm.formatTime(message.created_at)))])])])
     })], 2)

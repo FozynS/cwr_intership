@@ -4,7 +4,7 @@
       <div class="message-date">{{ formatDate(messageGroup.date) }}</div>
       <div
         v-for="message in messageGroup.messages"
-        :key="message.id"
+        :key="message.id + '-' + randomId()"
         class="message"
         :class="{
           'message-received': message.direction === 1,
@@ -13,7 +13,7 @@
       >
         <div class="message-author">{{ getAuthor(message) }}</div>
         <div class="message-text-container">
-          <div class="message-text">{{ message.message_body }}</div>
+          <div class="message-text" v-html="formatMessageBody(message)"></div>
           <div class="message-time">{{ formatTime(message.created_at) }}</div>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default {
         console.error("Invalid date-time format provided:", dateTime);
         return "";
       }
-      
+
       const timePart = dateTime.split(" ")[1];
       const [hours, minutes] = timePart.split(":");
 
@@ -149,17 +149,46 @@ export default {
 
     formatPhone(phone) {
       const cleaned = phone.replace(/\D/g, "");
-      let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+      let match = cleaned.match(/^1?(\d{3})(\d{3})(\d{4})$/);
 
       if (match) {
-        return `(${match[1]})-${match[2]}-${match[3]}`;
+        return match[1] ? `(${match[1]})-${match[2]}-${match[3]}` : phone;
       }
-      return phone;
+      return phone; 
+    },
+
+    formatMessageBody(message) {
+      const match = message.message_body.match(/^\((\d+)\/(\d+)\)/);
+      const isMessageFromPatient = message.author === 'Patient'
+
+      if(match) {
+        const currentPart = parseInt(match[1], 10);
+
+        if(currentPart < 2 && message.author && !isMessageFromPatient) {
+          const role = message.author === 'Xyz Test' ? 'Therapist' : 'Admin';
+          return `<strong>Message from ${message.author}, ${role} @ CWR:</strong> ${message.message_body}`;
+        } 
+
+        return message.message_body;
+      }
+
+      if(message.author && !isMessageFromPatient) {
+        const role = message.author === 'Xyz Test' ? 'Therapist' : 'Admin';
+        return `<strong>Message from ${message.author}, ${role} @ CWR:</strong> ${message.message_body}`;
+      } 
+
+      return message.message_body;
     },
 
     getAuthor(message) {
-      return message.direction === 1 ? "Patient" : message.author;
+      return message.direction === 1
+        ? "Patient"
+        : `${message.author} • ${this.formatPhone(message.from_number)}`;
     },
+
+    /**
+       *  5, 7 
+      */
 
     sendMessage() {
       if (this.newMessage.trim() === "") {
@@ -197,7 +226,11 @@ export default {
       }
 
       axios
-        .get(`/api/patients-sms-dashboard/${this.patientId}/sms/page/${this.currentPage + 1}`)
+        .get(
+          `/api/patients-sms-dashboard/${this.patientId}/sms/page/${
+            this.currentPage + 1
+          }`
+        )
         .then((response) => {
           const newMessages = response.data.data;
           if (newMessages.length) {
@@ -213,6 +246,13 @@ export default {
           console.error("Error loading additional messages:", error);
           $state.complete();
         });
+    },
+
+    randomId() {
+      const min = 0;
+      const max = Math.floor(1000);
+      const randomIndex = Math.floor(Math.random() * (max - min)) + min;
+      return randomIndex
     },
   },
   mounted() {
@@ -303,14 +343,11 @@ export default {
 }
 
 .message-text {
-  display: flex;
   font-size: 14px;
   color: #333;
   min-height: 50px;
   padding: 10px;
   border-radius: 5px;
-  justify-content: center;
-  align-items: center;
 }
 
 .message-time {

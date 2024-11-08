@@ -7,23 +7,13 @@ use App\Contracts\Models\PatientSms;
 use App\Http\Requests\PatientSms\PatientSmsRequest;
 use App\Repositories\Provider\PatientSms\PatientSmsRepositoryInterface;
 use App\Http\Requests\PatientSms\UpdateSmsStatusRequest;
+use Twilio\Rest\Client;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 
 class PatientSmsRepository implements PatientSmsRepositoryInterface
 {
-
-  public function getPatientIdByNumber(string $number)
-  {
-    $patient = Patient::where('cell_phone', $number)
-      ->orWhere('home_phone', $number)
-      ->orWhere('work_phone', $number)
-      ->first();
-
-    return $patient ? $patient->id : null;
-  }
-
   public function getPhoneNumbers(Patient $patient)
   {
     return [
@@ -44,11 +34,22 @@ class PatientSmsRepository implements PatientSmsRepositoryInterface
       ->orderBy('created_at', 'desc')
       ->paginate(15, ['*'], 'page', $page);
 
-
-    $formattedMessages = $messages->getCollection()->map(function ($message) {
-      return array_merge($message->toArray(), [ 
-        'author' => $message->user_id ? $message->user->name : $message->patient->name,
-      ]);
+    $formattedMessages = $messages->getCollection()->flatMap(function ($message) {
+      if (strlen($message->message_body) > 160) {
+        $messageParts = $this->splitLongMessage($message->message_body);
+        return collect($messageParts)->map(function ($part) use ($message) {
+          return array_merge($message->toArray(), [
+            'message_body' => $part,
+            'author' => $message->user_id ? $message->user->name : $message->patient->name,
+          ]);
+        });
+      } else {
+        return [
+          array_merge($message->toArray(), [
+            'author' => $message->user_id ? $message->user->name : $message->patient->name,
+          ])
+        ];
+      }
     });
 
     $messages->setCollection($formattedMessages);
@@ -140,6 +141,21 @@ class PatientSmsRepository implements PatientSmsRepositoryInterface
   public function sendMessage(array $data, Patient $patient)
   {
     try {
+      $sms = config('sms.company_number');
+      $twilioSid = config('sms.twilio.sid');
+      $twilioAuthToken = config('sms.twilio.token');
+      $twilioFromNumber = config('sms.twilio.from');
+
+      $twilioClient = new Client($twilioSid, $twilioAuthToken);
+      $twilioClient->messages->create(
+        // $data['to_number'],
+        '+380980482304',
+        [
+          'from' => $twilioFromNumber,
+          'body' => $data['message']
+        ]
+      );
+
       return $this->storeSms($data, $patient);
     } catch (\Exception $e) {
       Log::error('Error when sending a message: ' . $e->getMessage());
@@ -150,5 +166,21 @@ class PatientSmsRepository implements PatientSmsRepositoryInterface
   public function loadMoreMessages(Patient $patient, int $page)
   {
     return $this->getMessages($patient, $page);
+  }
+
+  function splitLongMessage($message) 
+  {
+    $maxLenght = 160;
+    $parts = str_split($message, $maxLenght);
+    $totalParts = count($parts);
+
+    $formattedParts = [];
+
+    foreach ($parts as $index => $part) {
+      $currentPartNum = $index + 1;
+      $formattedParts[] = "($currentPartNum/$totalParts) " . $part;
+    }
+
+    return $formattedParts;
   }
 }
