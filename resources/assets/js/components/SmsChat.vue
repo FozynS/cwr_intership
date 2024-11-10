@@ -186,10 +186,6 @@ export default {
         : `${message.author} • ${this.formatPhone(message.from_number)}`;
     },
 
-    /**
-       *  5, 7 
-      */
-
     sendMessage() {
       if (this.newMessage.trim() === "") {
         alert("Please enter a message.");
