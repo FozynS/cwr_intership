@@ -175256,12 +175256,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     getAuthor: function getAuthor(message) {
       return message.direction === 1 ? "Patient" : message.author + " \u2022 " + this.formatPhone(message.from_number);
     },
-
-
-    /**
-       *  5, 7 
-      */
-
     sendMessage: function sendMessage() {
       var _this2 = this;
 
