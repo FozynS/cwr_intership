@@ -18,6 +18,7 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+
 // --------------------------------
 // use Illuminate\Support\Facades\File;
 // use Illuminate\Support\Facades\Response;
@@ -39,6 +40,9 @@ use Illuminate\Support\Facades\Route;
 //     return $response;
 // });
 // ----------------------------------
+
+//TWILIO
+Route::post('/webhook/twilio/sms-to-therapist', 'Webhooks\PatientSms\SmsFromPatientWebhookController@handleSmsFromPatient');
 
 // MANDRILL WEBHOOKS
 Route::get('/mandrill-webhooks', 'Webhooks\MandrillWebhooksController@index');

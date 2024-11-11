@@ -11,8 +11,9 @@
 |
 */
 Broadcast::channel('patient.{patientId}', function ($user, $patientId) {
-  return (int) $user->id === $patientId;
+  return (int) $user->id === (int) $patientId;
 });
+
 Broadcast::channel('App.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Webhooks\PatientSms;
 
+use App\Patient;
 use App\Contracts\Models\PatientSms;
 use App\Http\Controllers\Controller;
 use Twilio\Rest\Client;
+use App\Events\SmsReceived;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -15,13 +17,15 @@ class SmsFromPatientWebhookController extends Controller
 
   public function __construct()
   {
-    $this->twilio = new Client(config('sms.twilio.sid'), config('services.twilio.token'));
+    $this->twilio = new Client(config('sms.twilio.sid'), config('sms.twilio.token'));
   }
 
   public function handleSmsFromPatient(Request $request)
   {
-    $fromNumber = $request->input('From');
-    $body = $request->input('Body');
+    $data = $request->all();
+
+    $fromNumber = $data['From'];
+    $body = $data['Body'];
 
     $patientSms = PatientSms::where('from_number', $fromNumber)->first();
 
@@ -30,28 +34,32 @@ class SmsFromPatientWebhookController extends Controller
 
       $this->savePatientSms($patientId, $fromNumber, $body);
 
-      $therapistIds = PatientSms::where('patient_id', $patientId)
+      event(new SmsReceived($patientId, $fromNumber, $body));
+
+      $allMessageByPatientId = PatientSms::where('patient_id', $patientId)
         ->whereNotNull('user_id')
         ->distinct()
         ->pluck('user_id');
 
-      foreach ($therapistIds as $therapistId) {
-        $this->sendSmsToTherapist($therapistId);
+      foreach ($allMessageByPatientId as $userId) {
+        $this->sendSmsToTherapist($userId);
       }
 
       return response('Send notification to all therapists', 200);
+    } else {
+      return response('Patient not found.', 404);
     }
 
     return response('Patient not found.', 404);
   }
 
-  private function sendSmsToTherapist($therapistId)
+  private function sendSmsToTherapist($userId)
   {
-    $therapist = PatientSms::find($therapistId);
+    $user = PatientSms::find($userId);
 
-    if ($therapist && $therapist->from_number) {
+    if ($user && $user->from_number) {
       $this->twilio->messages->create(
-        $therapist->from_number,
+        $user->from_number,
         [
           'from' => config('sms.twilio.from'),
           'body' => 'You have received a new SMS message from one of your patients. Please log in to CWR EHR to view.'
@@ -65,11 +73,12 @@ class SmsFromPatientWebhookController extends Controller
     return PatientSms::create([
       'from_number' => $fromNumber,
       'to_number' => config('sms.twilio.from'),
+      'direction' => PatientSms::SMS_DIRECTION_INBOUND_ID,
       'message_body' => $body,
       'patient_id' => $patientId,
       'is_read' => false,
       'is_archived' => false,
+      'created_at' => now()->toDateTimeString(),
     ]);
   }
-
 }

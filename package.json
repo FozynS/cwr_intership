@@ -11,6 +11,7 @@
     "laravel-echo-server": "laravel-echo-server"
   },
   "devDependencies": {
+    "@types/socket.io-client": "^3.0.0",
     "axios": "^0.15.3",
     "bootstrap-sass": "^3.4.3",
     "cross-env": "^3.2.3",

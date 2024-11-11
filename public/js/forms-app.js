@@ -175097,6 +175097,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_infinite_loading___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_infinite_loading__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_axios__ = __webpack_require__(276);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_axios__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__echo__ = __webpack_require__(1770);
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -175150,6 +175151,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 //
 //
 //
+
 
 
 
@@ -175308,6 +175310,17 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }).catch(function (error) {
         console.error("Error when sending a message:", error);
       });
+
+      if (payload.to_number === this.patient.cell_phone) {
+        var now = new Date();
+        __WEBPACK_IMPORTED_MODULE_1_axios___default.a.post('/webhook/twilio/sms-to-therapist', {
+          patientId: this.patientId,
+          message: payload.message,
+          timestamp: now.toISOString()
+        }).catch(function (error) {
+          console.error("Error triggering patient webhook:", error);
+        });
+      }
     },
     loadMoreMessages: function loadMoreMessages($state) {
       var _this3 = this;
@@ -175341,10 +175354,26 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       var max = Math.floor(1000);
       var randomIndex = Math.floor(Math.random() * (max - min)) + min;
       return randomIndex;
+    },
+    subscribeToPatientChannel: function subscribeToPatientChannel() {
+      var _this4 = this;
+
+      if (this.patientId) {
+        __WEBPACK_IMPORTED_MODULE_2__echo__["a" /* default */].channel('patient.' + this.patientId).listen('SmsReceived', function (event) {
+          _this4.messages.push({
+            from_number: event.from_number,
+            message_body: event.body,
+            received_at: event.received_at
+          });
+        });
+      } else {
+        console.error('Patient ID is not defined.');
+      }
     }
   },
   mounted: function mounted() {
     this.fetchMessages();
+    this.subscribeToPatientChannel();
   }
 });
 
@@ -422043,6 +422072,48 @@ if(false) {
 
 module.exports = __webpack_require__(1608);
 
+
+/***/ }),
+/* 1753 */,
+/* 1754 */,
+/* 1755 */,
+/* 1756 */,
+/* 1757 */,
+/* 1758 */,
+/* 1759 */,
+/* 1760 */,
+/* 1761 */,
+/* 1762 */,
+/* 1763 */,
+/* 1764 */,
+/* 1765 */,
+/* 1766 */,
+/* 1767 */,
+/* 1768 */,
+/* 1769 */,
+/* 1770 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_laravel_echo__ = __webpack_require__(935);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_socket_io_client__ = __webpack_require__(1000);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_socket_io_client___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_socket_io_client__);
+
+
+
+window.io = __WEBPACK_IMPORTED_MODULE_1_socket_io_client___default.a;
+window.Echo = new __WEBPACK_IMPORTED_MODULE_0_laravel_echo__["a" /* default */]({
+  broadcaster: 'socket.io',
+  host: window.location.hostname + ':6001',
+  authEndpoint: '/broadcasting/auth',
+  auth: {
+    headers: {
+      'X-CSRF-Token': document.head.querySelector('meta[name="csrf-token"]').content
+    }
+  }
+});
+
+/* harmony default export */ __webpack_exports__["a"] = (window.Echo);
 
 /***/ })
 /******/ ]);
