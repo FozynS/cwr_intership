@@ -9,26 +9,42 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-use Illuminate\Support\Facades\Log;
-
 class SmsReceived implements ShouldBroadcastNow
 {
   use Dispatchable, InteractsWithSockets, SerializesModels;
 
   public $patientId;
   public $fromNumber;
-  public $body;
+  public $toNumber;
+  public $direction;
+  public $messageBody;
+  public $isRead;
+  public $isArchived;
+  public $createdAt;
 
   /**
    * Create a new event instance.
    *
+   * @param int $patientId
+   * @param string $fromNumber
+   * @param string $body
+   * @param string $toNumber
+   * @param int $direction
+   * @param bool $isRead
+   * @param bool $isArchived
+   * @param string $createdAt
    * @return void
    */
-  public function __construct($patientId, $fromNumber, $body)
+  public function __construct($patientId, $fromNumber, $body, $toNumber, $direction, $isRead, $isArchived, $createdAt)
   {
     $this->patientId = $patientId;
     $this->fromNumber = $fromNumber;
-    $this->body = $body;
+    $this->messageBody = $body;
+    $this->toNumber = $toNumber;
+    $this->direction = $direction;
+    $this->isRead = $isRead;
+    $this->isArchived = $isArchived;
+    $this->createdAt = \Carbon\Carbon::parse($createdAt)->format('Y-m-d H:i:s');
   }
 
   /**
@@ -38,15 +54,20 @@ class SmsReceived implements ShouldBroadcastNow
    */
   public function broadcastOn()
   {
-    return new PrivateChannel('patient.'.$this->patientId);
+    return new Channel('patient.' . $this->patientId);
   }
 
   public function broadcastWith()
   {
     return [
       'from_number' => $this->fromNumber,
-      'body' => $this->body,
-      'received_at' => now()->toDateTimeString(), 
+      'message_body' => $this->messageBody,
+      'to_number' => $this->toNumber,
+      'direction' => $this->direction,
+      'is_read' => $this->isRead,
+      'is_archived' => $this->isArchived,
+      'created_at' => $this->createdAt,
+      'received_at' => now()->toDateTimeString(),
     ];
   }
 }

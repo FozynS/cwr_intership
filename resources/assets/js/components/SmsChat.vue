@@ -50,7 +50,6 @@
 <script>
 import InfiniteLoading from "vue-infinite-loading";
 import axios from "axios";
-import Echo from '../echo';
 
 export default {
   components: {
@@ -215,17 +214,6 @@ export default {
           console.error("Error when sending a message:", error);
         });
 
-      if(payload.to_number === this.patient.cell_phone) {
-        const now = new Date();
-        axios.post('/webhook/twilio/sms-to-therapist', {
-          patientId: this.patientId,
-          message: payload.message,
-          timestamp: now.toISOString(),
-        })
-        .catch((error) => {
-          console.error("Error triggering patient webhook:", error);
-        });
-      }
     },
 
     loadMoreMessages($state) {
@@ -266,13 +254,9 @@ export default {
 
     subscribeToPatientChannel() {
       if (this.patientId) {
-        Echo.channel('patient.' + this.patientId)
+        window.Echo.channel('patient.' + this.patientId)
         .listen('SmsReceived', (event) => {
-          this.messages.push({
-            from_number: event.from_number,
-            message_body: event.body,
-            received_at: event.received_at,
-          });
+          this.messages.push(event);
         });
       } else {
         console.error('Patient ID is not defined.');

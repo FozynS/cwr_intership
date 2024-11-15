@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Webhooks\PatientSms;
 
 use App\Patient;
@@ -27,14 +26,22 @@ class SmsFromPatientWebhookController extends Controller
     $fromNumber = $data['From'];
     $body = $data['Body'];
 
-    $patientSms = PatientSms::where('from_number', $fromNumber)->first();
-
+    $patientSms = Patient::where('cell_phone', $fromNumber)->first();
     if ($patientSms) {
-      $patientId = $patientSms->patient_id;
+      $patientId = $patientSms->id;
 
-      $this->savePatientSms($patientId, $fromNumber, $body);
+      $patientSmsData = $this->savePatientSms($patientId, $fromNumber, $body);
 
-      event(new SmsReceived($patientId, $fromNumber, $body));
+      event(new SmsReceived(
+        $patientId,
+        $fromNumber,
+        $body,
+        $patientSmsData->to_number,
+        $patientSmsData->direction,
+        $patientSmsData->is_read,
+        $patientSmsData->is_archived,
+        $patientSmsData->created_at
+      ));
 
       $allMessageByPatientId = PatientSms::where('patient_id', $patientId)
         ->whereNotNull('user_id')
@@ -49,14 +56,11 @@ class SmsFromPatientWebhookController extends Controller
     } else {
       return response('Patient not found.', 404);
     }
-
-    return response('Patient not found.', 404);
   }
 
   private function sendSmsToTherapist($userId)
   {
     $user = PatientSms::find($userId);
-
     if ($user && $user->from_number) {
       $this->twilio->messages->create(
         $user->from_number,
@@ -70,6 +74,8 @@ class SmsFromPatientWebhookController extends Controller
 
   private function savePatientSms($patientId, $fromNumber, $body)
   {
+    $createdAt = now()->format('Y-m-d H:i:s');
+
     return PatientSms::create([
       'from_number' => $fromNumber,
       'to_number' => config('sms.twilio.from'),
@@ -78,7 +84,7 @@ class SmsFromPatientWebhookController extends Controller
       'patient_id' => $patientId,
       'is_read' => false,
       'is_archived' => false,
-      'created_at' => now()->toDateTimeString(),
+      'created_at' => $createdAt,
     ]);
   }
 }

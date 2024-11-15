@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Events\PatientDocumentStatusChanged;
 use App\Listeners\WriteDocumentStatusChangedComment;
+use App\Events\SmsReceived;
+use App\Listeners\SendSmsToWebSocket;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -15,6 +17,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
+        \App\Events\SmsReceived::class => [
+          \App\Listeners\SendSmsToWebSocket::class,
+        ],
         'App\Events\PatientDocumentSent' => [
             'App\Listeners\WriteDocumentSentComment',
         ],
