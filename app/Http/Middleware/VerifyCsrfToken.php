@@ -12,6 +12,7 @@ class VerifyCsrfToken extends BaseVerifier
      * @var array
      */
     protected $except = [
+        'webhook/twilio/sms-to-therapist',
         'dashboard/doctors',
         'dashboard/invite',
         'patient/save-note',

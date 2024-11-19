@@ -213,6 +213,7 @@ export default {
         .catch((error) => {
           console.error("Error when sending a message:", error);
         });
+
     },
 
     loadMoreMessages($state) {
@@ -250,9 +251,22 @@ export default {
       const randomIndex = Math.floor(Math.random() * (max - min)) + min;
       return randomIndex
     },
+
+    subscribeToPatientChannel() {
+      if (this.patientId) {
+        window.Echo.channel('patient.' + this.patientId)
+        .listen('SmsReceived', (event) => {
+          this.messages.push(event);
+        });
+      } else {
+        console.error('Patient ID is not defined.');
+      }
+    },
+
   },
   mounted() {
     this.fetchMessages();
+    this.subscribeToPatientChannel();
   },
 };
 </script>

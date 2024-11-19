@@ -10,6 +10,9 @@
 | used to check if an authenticated user can listen to the channel.
 |
 */
+Broadcast::channel('patient.{patientId}', function ($user, $patientId) {
+  return (int) $user->id === (int) $patientId;
+});
 
 use Illuminate\Support\Facades\Broadcast;
 

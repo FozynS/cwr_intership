@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_DRIVER', 'null'),
+    'default' => env('BROADCAST_DRIVER', 'socket.io'),
 
     /*
     |--------------------------------------------------------------------------
@@ -44,6 +44,19 @@ return [
             'driver' => 'redis',
             'connection' => 'default',
         ],
+
+      'socket.io' => [
+        'driver' => 'pusher',
+        'key' => '',
+        'secret' => '',
+        'app_id' => '',
+        'options' => [
+          'host' => env('SOCKET_IO_HOST', 'localhost'),
+          'port' => env('SOCKET_IO_PORT', 6001),
+          'scheme' => env('SOCKET_IO_SCHEME', 'http'),
+          'encrypted' => false, 
+        ],
+      ],
 
         'log' => [
             'driver' => 'log',
