@@ -47,9 +47,9 @@ class SmsFromPatientWebhookController extends Controller
         ->distinct()
         ->pluck('user_id');
 
-      foreach ($therapistIds as $therapistId) {
-        $this->sendSmsToTherapist($therapistId);
-      }
+    foreach ($allMessageByPatientId as $userId) {
+        $this->sendSmsToTherapist($userId);
+  }
 
       return response('Send notification to all therapists', 200);
     }
