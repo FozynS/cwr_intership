@@ -28,11 +28,6 @@ class SmsReceived implements ShouldBroadcastNow
    *
    * @return void
    */
-  public function __construct($patientId, $smsMessage)
-  {
-    $this->patientId = $patientId;
-    $this->smsMessage = $smsMessage;
-
    * @param int $patientId
    * @param string $fromNumber
    * @param string $body
@@ -41,8 +36,9 @@ class SmsReceived implements ShouldBroadcastNow
    * @param bool $isRead
    * @param bool $isArchived
    * @param string $createdAt
-   * @return void
    */
+
+
   public function __construct($patientId, $fromNumber, $body, $toNumber, $direction, $isRead, $isArchived, $createdAt)
   {
     $this->patientId = $patientId;
@@ -68,9 +64,6 @@ class SmsReceived implements ShouldBroadcastNow
   public function broadcastWith()
   {
     return [
-      'from_number' => $this->smsMessage->from_number,
-      'body' => $this->smsMessage->message_body,
-      'received_at' => $this->smsMessage->created_at
       'from_number' => $this->fromNumber,
       'message_body' => $this->messageBody,
       'to_number' => $this->toNumber,
