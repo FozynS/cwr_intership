@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Webhooks\PatientSms;
 
 use App\Patient;
@@ -6,8 +7,6 @@ use App\Contracts\Models\PatientSms;
 use App\Http\Controllers\Controller;
 use Twilio\Rest\Client;
 use App\Events\SmsReceived;
-
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class SmsFromPatientWebhookController extends Controller 
@@ -48,14 +47,14 @@ class SmsFromPatientWebhookController extends Controller
         ->distinct()
         ->pluck('user_id');
 
-      foreach ($allMessageByPatientId as $userId) {
+    foreach ($allMessageByPatientId as $userId) {
         $this->sendSmsToTherapist($userId);
-      }
+  }
 
       return response('Send notification to all therapists', 200);
-    } else {
-      return response('Patient not found.', 404);
     }
+
+    return response('Patient not found.', 404);
   }
 
   private function sendSmsToTherapist($userId)

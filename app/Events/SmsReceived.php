@@ -1,19 +1,20 @@
 <?php
+
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
 class SmsReceived implements ShouldBroadcastNow
 {
   use Dispatchable, InteractsWithSockets, SerializesModels;
 
   public $patientId;
+  public $smsMessage;
   public $fromNumber;
   public $toNumber;
   public $direction;
@@ -25,6 +26,8 @@ class SmsReceived implements ShouldBroadcastNow
   /**
    * Create a new event instance.
    *
+   * @return void
+   */
    * @param int $patientId
    * @param string $fromNumber
    * @param string $body
@@ -33,8 +36,9 @@ class SmsReceived implements ShouldBroadcastNow
    * @param bool $isRead
    * @param bool $isArchived
    * @param string $createdAt
-   * @return void
    */
+
+
   public function __construct($patientId, $fromNumber, $body, $toNumber, $direction, $isRead, $isArchived, $createdAt)
   {
     $this->patientId = $patientId;

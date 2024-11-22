@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Patient\PatientTag;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\Webhooks\PatientSms\SmsFromPatientWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -244,6 +245,7 @@ Route::namespace('Api')->group(function () {
         );
     });
 
+    Route::post('/webhook/twilio/sms-to-therapist', 'SmsFromPatientWebhookController@handleSmsFromPatient');
     Route::prefix('patients-sms-dashboard')->group(function() { 
 
       Route::prefix('all-messages')->group(function () {
